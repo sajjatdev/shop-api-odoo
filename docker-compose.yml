@@ -27,7 +27,7 @@ services:
   db:
     image: postgres:13
     environment:
-      - POSTGRES_DB=gomaxtracker
+      - POSTGRES_DB=api_db
       - POSTGRES_USER=odoo
       - POSTGRES_PASSWORD=odoo
     volumes:
