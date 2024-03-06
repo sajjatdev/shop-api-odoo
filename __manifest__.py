@@ -7,7 +7,7 @@
     'description': """
     """,
     'category': 'Api/Api',
-    'depends': ['website_sale'],
+    'depends': ['website_sale','sale'],
     'data': [
     ],
     'installable': True,
