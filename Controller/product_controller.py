@@ -7,7 +7,7 @@ from odoo.addons.website_sale.controllers.main import WebsiteSale
 
 
 class ProductController(WebsiteSale):
-    @http.route('/api/v1/product/list', type='json', auth='none', methods=['GET'], csrf=True)
+    @http.route('/api/v1/product/list', type='json', auth='public', methods=['GET'], csrf=True)
     def product_list(self, **kwargs):
         products = request.env['product.template'].sudo().search([])  # Fetch all product records
         product_data = []
@@ -47,14 +47,14 @@ class ProductController(WebsiteSale):
         return product_data
     
 
-    @http.route('/api/v1/add_to_cart', type='json', auth='none', methods=['POST'], csrf=True)
+    @http.route('/api/v1/add_to_cart', type='json', auth='public', methods=['POST'], csrf=True)
     def cart_add_item(self, **kwargs):
         try:
             request_json = json.loads(request.httprequest.data)
         except ValueError:
             return request.make_response("Invalid JSON body", headers=[('Content-Type', 'application/json')], status=400)
         
-      
+    
         product_id=request_json.get("product_id")
         partner_id=request_json.get("partner_id")
         quantity=request_json.get("quantity")
@@ -63,7 +63,7 @@ class ProductController(WebsiteSale):
     
 
         if not order or order.state != 'draft':
-             order= request.env['sale.order'].sudo().create({"access_token":request.session.sid,"company_id":1,"partner_id":partner_id})
+             order= request.env['sale.order'].sudo().create({"access_token":request.session.sid,"website_id":1,"partner_id":partner_id})
         
         order_line=None
 
@@ -72,7 +72,7 @@ class ProductController(WebsiteSale):
            
         return order_line
     
-    @http.route('/api/v1/cart_get', type='json', auth='none', methods=['POST'], csrf=True)
+    @http.route('/api/v1/cart_get', type='json', auth='public', methods=['POST'], csrf=True)
     def cart_get_item(self, **kwargs):
        
         order = request.env['sale.order'].sudo().search([("access_token","=",request.session.sid)], limit=1)
@@ -140,27 +140,14 @@ class ProductController(WebsiteSale):
         cart_dict['cart_items']=cart_items
         return cart_dict
     
-    @http.route('/api/v1/cart_clear', type='json', auth='none', methods=['POST'], csrf=True)
+    @http.route('/api/v1/cart_clear', type='json', auth='public', methods=['POST'], csrf=True)
     def cart_clear(self, **kwargs):
         order = request.env['sale.order'].sudo().search([("access_token","=",request.session.sid)], limit=1)
         for line in order.order_line:
             line.unlink()
         return{"status_code":200,"message":"successfully clear cart"}
 
-    @http.route('/api/v1/order_confirm', type='json', auth='none', methods=['POST'], csrf=True)
-    def order_confirm(self, **kwargs):
-        order = request.env['sale.order'].sudo().search([("access_token","=",request.session.sid)], limit=1)
 
-        order.write({'state':"sale"})
-        
-        return{"status_code":200,"message":"successfully order confirmed"}
-    
-    @http.route('/api/v1/order_cancel', type='json', auth='none', methods=['POST'], csrf=True)
-    def order_cancel(self, **kwargs):
-        order = request.env['sale.order'].sudo().search([("access_token","=",request.session.sid)], limit=1)
-        order.write({'state': 'cancel'})
-        return{"status_code":200,"message":"successfully order cancel"}
-    
 
 
 
